@@ -1,7 +1,14 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { ethers } from 'ethers';
+import { Web3Context } from '../context/Web3Context';
+import { CARD_CONTRACT_ADDRESS, CARD_CONTRACT_ABI } from '../contracts/config';
+import MintedCards from './MintedCards';
 
 const Marketplace = () => {
+  const { provider, account } = useContext(Web3Context);
+  const [mintingStatus, setMintingStatus] = useState('');
+
   // Filter states
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [selectedRarity, setSelectedRarity] = useState('all');
@@ -24,8 +31,102 @@ const Marketplace = () => {
       },
       listed: "2 hours ago"
     },
-    // Add more cards...
+    
   ];
+
+  // Form state
+  const [formData, setFormData] = useState({
+    element: '',
+    power: '',
+    defense: '',
+    special: '',
+    rarity: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const mintCard = async (e) => {
+    e.preventDefault();
+    try {
+      setMintingStatus('Starting mint process...');
+      
+      // Basic validation
+      if (!formData.element || !formData.power || !formData.defense || !formData.special || !formData.rarity) {
+        throw new Error('All fields are required');
+      }
+
+      const signer = await provider.getSigner();
+      console.log('Signer address:', await signer.getAddress());
+
+      // Create contract instance
+      const contract = new ethers.Contract(
+        CARD_CONTRACT_ADDRESS,
+        CARD_CONTRACT_ABI,
+        signer
+      );
+
+      // Log transaction parameters
+      const params = {
+        element: formData.element,
+        power: parseInt(formData.power),
+        defense: parseInt(formData.defense),
+        special: formData.special,
+        rarity: parseInt(formData.rarity)
+      };
+      console.log('Minting with parameters:', params);
+
+      // Get current gas price
+      const feeData = await provider.getFeeData();
+      console.log('Current gas price:', feeData.gasPrice.toString());
+
+      setMintingStatus('Sending transaction...');
+
+      // Send transaction with explicit gas settings
+      const tx = await contract.mintCard(
+        params.element,
+        params.power,
+        params.defense,
+        params.special,
+        params.rarity,
+        {
+          gasLimit: 300000,
+          gasPrice: feeData.gasPrice
+        }
+      );
+
+      console.log('Transaction sent:', tx.hash);
+      setMintingStatus('Transaction sent, waiting for confirmation...');
+
+      // Wait for transaction confirmation
+      const receipt = await tx.wait();
+      console.log('Transaction confirmed:', receipt);
+
+      setMintingStatus('Card minted successfully!');
+      
+      // Reset form
+      setFormData({
+        element: '',
+        power: '',
+        defense: '',
+        special: '',
+        rarity: ''
+      });
+
+    } catch (error) {
+      console.error('Minting error:', {
+        message: error.message,
+        code: error.code,
+        data: error.data
+      });
+      setMintingStatus(`Error: ${error.message}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0A0A0F] pt-24 pb-12">
@@ -144,6 +245,92 @@ const Marketplace = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        <MintedCards />
+
+        <div className="mt-8 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6">
+          <h2 className="text-2xl font-bold text-white mb-6">Mint New Card</h2>
+          
+          <form onSubmit={mintCard} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300">Element</label>
+              <input
+                type="text"
+                name="element"
+                value={formData.element}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md bg-white/5 border border-white/10 text-white px-3 py-2"
+                placeholder="Fire, Water, Earth, Air"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300">Power (0-100)</label>
+              <input
+                type="number"
+                name="power"
+                min="0"
+                max="100"
+                value={formData.power}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md bg-white/5 border border-white/10 text-white px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300">Defense (0-100)</label>
+              <input
+                type="number"
+                name="defense"
+                min="0"
+                max="100"
+                value={formData.defense}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md bg-white/5 border border-white/10 text-white px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300">Special Ability</label>
+              <input
+                type="text"
+                name="special"
+                value={formData.special}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md bg-white/5 border border-white/10 text-white px-3 py-2"
+                placeholder="Fireball, Heal, Shield"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300">Rarity (1-5)</label>
+              <input
+                type="number"
+                name="rarity"
+                min="1"
+                max="5"
+                value={formData.rarity}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md bg-white/5 border border-white/10 text-white px-3 py-2"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm 
+                       text-white px-6 py-3 rounded-xl border border-white/10 hover:border-blue-400/30 
+                       transition-all duration-300"
+            >
+              Mint Card
+            </button>
+          </form>
+
+          {mintingStatus && (
+            <div className={`mt-4 text-center ${mintingStatus.includes('Error') ? 'text-red-400' : 'text-green-400'}`}>
+              {mintingStatus}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { Web3Context } from '../context/Web3Context';
 
 const Navbar = () => {
+  const { account, isConnected, connectWallet, disconnectWallet, error } = useContext(Web3Context);
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -25,6 +27,23 @@ const Navbar = () => {
     { name: 'Rankings', href: '/rankings' },
   ];
 
+  console.log("Web3Context values:", { account, isConnected, error }); // Debug log
+
+  const handleWalletClick = () => {
+    console.log("Wallet button clicked"); // Debug log
+    if (isConnected) {
+      disconnectWallet();
+    } else {
+      connectWallet();
+    }
+  };
+
+  // Function to truncate ethereum address
+  const truncateAddress = (address) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   return (
     <motion.nav
       initial={{ opacity: 0, y: -20 }}
@@ -33,7 +52,7 @@ const Navbar = () => {
       className={`fixed w-full z-50 transition-all duration-300`}
     >
       <div className={`mx-auto transition-all duration-300 ${
-        scrolled ? 'bg-black/30 backdrop-blur-xl border-b border-white/10' : ''
+        scrolled ? 'bg-black/30 backdrop-blur-xl ' : ''
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -78,6 +97,12 @@ const Navbar = () => {
 
             {/* Right Section */}
             <div className="hidden md:flex items-center space-x-4">
+              {error && (
+                <div className="text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+
               {/* Notification Bell */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -90,8 +115,9 @@ const Navbar = () => {
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 rounded-full"></span>
               </motion.button>
 
-              {/* Connect Wallet Button */}
+              {/* Connect/Disconnect Wallet Button */}
               <motion.button
+                onClick={handleWalletClick}
                 className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm text-white px-6 py-2.5 rounded-xl
                           border border-white/10 hover:border-blue-400/30 transition-all duration-300
                           flex items-center space-x-2 group"
@@ -99,7 +125,9 @@ const Navbar = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-pulse"></span>
-                <span>Connect Wallet</span>
+                <span>
+                  {isConnected ? truncateAddress(account) : 'Connect Wallet'}
+                </span>
               </motion.button>
             </div>
 
