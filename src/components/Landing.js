@@ -116,7 +116,7 @@ const Landing = () => {
           <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-yellow-500/20 rounded-full mix-blend-multiply filter blur-[120px] animate-pulse-slow" />
         </div>
 
-        <section className="pt-32 pb-20 relative">
+        <section className="pt-24 pb-20 relative">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-12">
               <motion.div 
