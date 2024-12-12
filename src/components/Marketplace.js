@@ -56,60 +56,40 @@ const Marketplace = () => {
     try {
       setMintingStatus('Starting mint process...');
       
-      // Basic validation
-      if (!formData.element || !formData.power || !formData.defense || !formData.special || !formData.rarity) {
-        throw new Error('All fields are required');
-      }
-
       const signer = await provider.getSigner();
-      console.log('Signer address:', await signer.getAddress());
+      const address = await signer.getAddress();
+      
+      // Get the current nonce
+      const nonce = await provider.getTransactionCount(address);
+      console.log('Current nonce:', nonce);
 
-      // Create contract instance
       const contract = new ethers.Contract(
         CARD_CONTRACT_ADDRESS,
         CARD_CONTRACT_ABI,
         signer
       );
 
-      // Log transaction parameters
-      const params = {
-        element: formData.element,
-        power: parseInt(formData.power),
-        defense: parseInt(formData.defense),
-        special: formData.special,
-        rarity: parseInt(formData.rarity)
-      };
-      console.log('Minting with parameters:', params);
-
-      // Get current gas price
-      const feeData = await provider.getFeeData();
-      console.log('Current gas price:', feeData.gasPrice.toString());
-
       setMintingStatus('Sending transaction...');
 
-      // Send transaction with explicit gas settings
       const tx = await contract.mintCard(
-        params.element,
-        params.power,
-        params.defense,
-        params.special,
-        params.rarity,
+        formData.element,
+        parseInt(formData.power),
+        parseInt(formData.defense),
+        formData.special,
+        parseInt(formData.rarity),
         {
-          gasLimit: 300000,
-          gasPrice: feeData.gasPrice
+          nonce: nonce,
+          gasLimit: 300000
         }
       );
 
       console.log('Transaction sent:', tx.hash);
-      setMintingStatus('Transaction sent, waiting for confirmation...');
+      setMintingStatus('Waiting for confirmation...');
 
-      // Wait for transaction confirmation
       const receipt = await tx.wait();
       console.log('Transaction confirmed:', receipt);
 
       setMintingStatus('Card minted successfully!');
-      
-      // Reset form
       setFormData({
         element: '',
         power: '',
@@ -119,11 +99,7 @@ const Marketplace = () => {
       });
 
     } catch (error) {
-      console.error('Minting error:', {
-        message: error.message,
-        code: error.code,
-        data: error.data
-      });
+      console.error('Minting error:', error);
       setMintingStatus(`Error: ${error.message}`);
     }
   };

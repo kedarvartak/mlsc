@@ -9,7 +9,7 @@ function App() {
   return (
     <Web3Provider>
       <Router>
-        <div className="min-h-screen bg-[#0A0A0F]">
+        <div className="min-h-screen ">
           <Navbar />
           <Routes>
             <Route path="/" element={<Landing />} />

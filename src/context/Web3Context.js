@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { BrowserProvider } from 'ethers';
+import { ethers } from 'ethers';
 
 export const Web3Context = createContext();
 
@@ -8,37 +8,34 @@ export const Web3Provider = ({ children }) => {
   const [provider, setProvider] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const connectWallet = async () => {
+    if (isConnecting) return; // Prevent multiple connection attempts
+    
     try {
+      setIsConnecting(true);
+      setError(null);
+
       if (!window.ethereum) {
         throw new Error("Please install MetaMask");
       }
 
-      // Reset MetaMask
-      await window.ethereum.request({
-        method: "wallet_requestPermissions",
-        params: [{ eth_accounts: {} }],
+      const ethersProvider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
       });
-
-      // Switch to Hardhat network
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x7A69' }], // 31337 in hex
-      });
-
-      const ethersProvider = new BrowserProvider(window.ethereum);
-      const accounts = await ethersProvider.send("eth_requestAccounts", []);
       
       if (accounts.length > 0) {
         setAccount(accounts[0]);
         setProvider(ethersProvider);
         setIsConnected(true);
-        setError(null);
       }
     } catch (err) {
       console.error("Connection error:", err);
       setError(err.message);
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -54,6 +51,7 @@ export const Web3Provider = ({ children }) => {
       window.ethereum.on('accountsChanged', (accounts) => {
         if (accounts.length > 0) {
           setAccount(accounts[0]);
+          setIsConnected(true);
         } else {
           disconnectWallet();
         }
@@ -61,6 +59,10 @@ export const Web3Provider = ({ children }) => {
 
       window.ethereum.on('chainChanged', () => {
         window.location.reload();
+      });
+
+      window.ethereum.on('disconnect', () => {
+        disconnectWallet();
       });
     }
 
@@ -77,6 +79,7 @@ export const Web3Provider = ({ children }) => {
       provider,
       isConnected,
       error,
+      isConnecting,
       connectWallet,
       disconnectWallet
     }}>
