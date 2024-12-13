@@ -21,29 +21,67 @@ const MintedCards = () => {
         provider
       );
 
+      console.log('Contract instance created');
       console.log('Fetching cards for account:', account);
 
-      // Get tokens owned by the account
-      const tokenIds = await contract.getTokensByOwner(account);
-      console.log('Token IDs:', tokenIds);
+      try {
+        // Check balance first
+        const balance = await contract.balanceOf(account);
+        console.log('Account balance:', balance.toString());
 
-      // Fetch attributes for each token
-      const cardPromises = tokenIds.map(async (tokenId) => {
-        const attributes = await contract.getCardAttributes(tokenId);
-        return {
-          id: tokenId.toString(),
-          element: attributes.element,
-          power: attributes.power,
-          defense: attributes.defense,
-          special: attributes.special,
-          rarity: attributes.rarity
-        };
-      });
+        if (balance.toString() === '0') {
+          console.log('No tokens found for account');
+          setCards([]);
+          setLoading(false);
+          return;
+        }
 
-      const fetchedCards = await Promise.all(cardPromises);
-      console.log('Fetched cards:', fetchedCards);
-      setCards(fetchedCards);
-      setLoading(false);
+        // Get tokens owned by the account
+        const tokenIds = await contract.getTokensByOwner(account);
+        console.log('Raw token IDs response:', tokenIds);
+
+        if (!tokenIds) {
+          console.log('No tokens found for account');
+          setCards([]);
+          setLoading(false);
+          return;
+        }
+
+        // Ensure tokenIds is an array
+        const tokenIdsArray = Array.isArray(tokenIds) ? tokenIds : [tokenIds];
+        console.log('Token IDs array:', tokenIdsArray);
+
+        // Fetch attributes for each token
+        const cardPromises = tokenIdsArray.map(async (tokenId) => {
+          try {
+            console.log('Fetching attributes for token:', tokenId.toString());
+            const attributes = await contract.getCardAttributes(tokenId);
+            console.log('Attributes for token', tokenId.toString(), ':', attributes);
+            
+            return {
+              id: tokenId.toString(),
+              element: attributes.element,
+              power: attributes.power,
+              defense: attributes.defense,
+              special: attributes.special,
+              rarity: attributes.rarity,
+              imageUrl: attributes.imageUrl
+            };
+          } catch (error) {
+            console.error(`Error fetching attributes for token ${tokenId}:`, error);
+            return null;
+          }
+        });
+
+        const fetchedCards = (await Promise.all(cardPromises)).filter(card => card !== null);
+        console.log('Final fetched cards:', fetchedCards);
+        setCards(fetchedCards);
+      } catch (error) {
+        console.error('Error in data fetching:', error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Error fetching cards:', error);
       setLoading(false);
@@ -87,15 +125,41 @@ const MintedCards = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {cards.map((card) => (
-        <div key={card.id} className="bg-gray-800 rounded-lg p-4 shadow-lg">
-          <h3 className="text-xl font-bold mb-2">{card.element} Card</h3>
-          <div className="space-y-2">
-            <p>Power: {card.power}</p>
-            <p>Defense: {card.defense}</p>
-            <p>Special: {card.special}</p>
-            <p>Rarity: {card.rarity}</p>
+        <div key={card.id} className="bg-white rounded-xl p-6 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+          <div className="relative aspect-square mb-4 bg-[#FFE8E8] rounded-lg overflow-hidden">
+            <img 
+              src={card.imageUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${(parseInt(card.id) % 151) + 1}.png`}
+              alt={`${card.element} Pokemon`}
+              className="w-full h-full object-contain p-4"
+            />
+            <div className="absolute top-2 right-2 bg-white px-3 py-1 rounded-full border-2 border-black font-bold text-sm">
+              #{card.id}
+            </div>
+          </div>
+          
+          <h3 className="text-xl font-bold mb-4 text-center">
+            {card.element} Pokemon
+          </h3>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between items-center border-b-2 border-black/10 pb-2">
+              <span className="font-bold">Power</span>
+              <span className="text-red-500 font-bold">{card.power}</span>
+            </div>
+            <div className="flex justify-between items-center border-b-2 border-black/10 pb-2">
+              <span className="font-bold">Defense</span>
+              <span className="text-blue-500 font-bold">{card.defense}</span>
+            </div>
+            <div className="flex justify-between items-center border-b-2 border-black/10 pb-2">
+              <span className="font-bold">Special</span>
+              <span className="text-purple-500 font-bold">{card.special}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-bold">Rarity</span>
+              <span className="text-yellow-500 font-bold">{'⭐'.repeat(parseInt(card.rarity))}</span>
+            </div>
           </div>
         </div>
       ))}

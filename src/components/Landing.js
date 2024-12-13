@@ -3,14 +3,41 @@ import { motion } from "framer-motion";
 import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
 import { useSpring, animated } from '@react-spring/web';
 import Spline from '@splinetool/react-spline';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Web3Context } from '../context/Web3Context';
+import { useNavigate } from 'react-router-dom';
 
 // A more colorful placeholder with Pokemon-like colors
 const pokemonCard = "https://placehold.co/600x800/FF0000/FFFFFF.png?text=Pokemon+NFT+Card";
 
 const Landing = () => {
-  const { connectWallet, isConnected } = useContext(Web3Context);
+  const { connectWallet, isConnected, claimStarterPack } = useContext(Web3Context);
+  const [claiming, setClaiming] = useState(false);
+  const [claimStatus, setClaimStatus] = useState('');
+  const navigate = useNavigate();
+
+  const handleStartJourney = async () => {
+    try {
+      if (!isConnected) {
+        await connectWallet();
+      }
+      
+      setClaiming(true);
+      setClaimStatus('Claiming your starter Pokemon...');
+      await claimStarterPack();
+      setClaimStatus('Starter Pokemon claimed successfully!');
+      
+      setTimeout(() => {
+        navigate('/marketplace');
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Error starting journey:", error);
+      setClaimStatus(`Error: ${error.message}`);
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   const HeroCard = () => {
     const float = useSpring({
@@ -135,13 +162,18 @@ const Landing = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                   <motion.button
-                    onClick={connectWallet}
+                    onClick={handleStartJourney}
                     className="neubrutalism-button bg-red-500 text-white px-8 py-4 rounded-xl font-bold"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    {isConnected ? 'Connected!' : 'Start Your Journey'}
+                    {claiming ? 'Claiming...' : isConnected ? 'Connected!' : 'Start Your Journey'}
                   </motion.button>
+                  {claimStatus && (
+                    <div className={`text-sm ${claimStatus.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
+                      {claimStatus}
+                    </div>
+                  )}
                   <motion.button
                     className="neubrutalism-button bg-white text-black px-8 py-4 rounded-xl font-bold"
                     whileHover={{ scale: 1.02 }}

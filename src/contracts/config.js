@@ -1,4 +1,6 @@
-export const CARD_CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+import contractAddress from './address.json';
+
+export const CARD_CONTRACT_ADDRESS = contractAddress.address;
 
 export const CARD_CONTRACT_ABI = [
   {
@@ -120,6 +122,11 @@ export const CARD_CONTRACT_ABI = [
             "internalType": "uint8",
             "name": "rarity",
             "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "imageUrl",
+            "type": "string"
           }
         ],
         "internalType": "struct ElementalCard.CardAttributes",
@@ -144,6 +151,25 @@ export const CARD_CONTRACT_ABI = [
         "internalType": "uint256[]",
         "name": "",
         "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -186,5 +212,31 @@ export const CARD_CONTRACT_ABI = [
     ],
     "name": "Transfer",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "claimStarterPack",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "hasClaimedStarterPack",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ]; 

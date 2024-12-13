@@ -1,4 +1,5 @@
 const hre = require("hardhat");
+const fs = require('fs');
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -14,6 +15,19 @@ async function main() {
   const address = await elementalCard.getAddress();
   console.log("ElementalCard deployed to:", address);
 
+  // Save the contract address to a file
+  const config = {
+    address,
+    network: hre.network.name
+  };
+  
+  fs.writeFileSync(
+    './src/contracts/address.json',
+    JSON.stringify(config, null, 2)
+  );
+
+  console.log("Contract address saved to src/contracts/address.json");
+
   // Verify deployment
   const code = await hre.ethers.provider.getCode(address);
   console.log("Contract code length:", code.length);
@@ -22,16 +36,13 @@ async function main() {
     throw new Error('Contract deployment failed - no code at address');
   }
 
-  // Verify contract is working
+  // Now get the contract name and symbol
   const name = await elementalCard.name();
   const symbol = await elementalCard.symbol();
+  
   console.log("Contract name:", name);
   console.log("Contract symbol:", symbol);
-
   console.log("Contract deployment verified!");
-
-  // Add a delay to ensure the node has processed the deployment
-  await new Promise(resolve => setTimeout(resolve, 5000));
 }
 
 main()
