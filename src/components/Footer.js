@@ -29,9 +29,9 @@ const Footer = () => {
 
   return (
     <footer className="relative bg-white border-t-4 border-black">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-16">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8 py-16">
           {footerSections.map((section, index) => (
             <motion.div
               key={section.title}
@@ -42,16 +42,16 @@ const Footer = () => {
               className="space-y-4"
             >
               <div className="inline-block">
-                <h3 className="font-display text-lg font-black text-black bg-yellow-400 px-4 py-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <h3 className="font-display text-base sm:text-lg font-black text-black bg-yellow-400 px-3 sm:px-4 py-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   {section.title}
                 </h3>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-2 sm:space-y-3">
                 {section.links.map((link) => (
                   <li key={link}>
                     <a 
                       href="#" 
-                      className="text-gray-700 hover:text-black font-medium transition-colors hover:underline decoration-2 decoration-red-500"
+                      className="text-sm sm:text-base text-gray-700 hover:text-black font-medium transition-colors hover:underline decoration-2 decoration-red-500"
                     >
                       {link}
                     </a>
@@ -67,23 +67,23 @@ const Footer = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="py-12 border-t-2 border-black"
+          className="py-8 sm:py-12 border-t-2 border-black"
         >
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-            <div className="space-y-4 max-w-lg">
-              <h3 className="font-display text-2xl font-black text-black">Stay in the loop! 🎮</h3>
-              <p className="font-body text-gray-700">Get the latest updates on new Pokemon cards and features</p>
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8">
+            <div className="space-y-2 sm:space-y-4 max-w-lg">
+              <h3 className="font-display text-xl sm:text-2xl font-black text-black">Stay in the loop! 🎮</h3>
+              <p className="font-body text-sm sm:text-base text-gray-700">Get the latest updates on new Pokemon cards and features</p>
             </div>
-            <div className="flex w-full lg:w-auto gap-4">
+            <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
               <input
                 type="email"
                 placeholder="pikachu@pokemon.com"
-                className="flex-1 lg:w-80 px-4 py-3 rounded-xl bg-white border-2 border-black text-black placeholder:text-gray-500 focus:outline-none focus:border-red-500 transition-colors"
+                className="flex-1 lg:w-80 px-4 py-3 rounded-xl bg-white border-2 border-black text-black placeholder:text-gray-500 focus:outline-none focus:border-red-500 transition-colors text-sm sm:text-base"
               />
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="neubrutalism-button bg-red-500 text-white px-6 py-3 rounded-xl font-bold whitespace-nowrap"
+                className="neubrutalism-button bg-red-500 text-white px-6 py-3 rounded-xl font-bold whitespace-nowrap text-sm sm:text-base"
               >
                 Join Now →
               </motion.button>
@@ -96,21 +96,21 @@ const Footer = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="py-8 border-t-2 border-black"
+          className="py-6 sm:py-8 border-t-2 border-black"
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-gray-700 font-medium">
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-6">
+            <div className="text-gray-700 font-medium text-sm sm:text-base text-center sm:text-left">
               © 2024 Pokemon NFT. All rights reserved.
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
               {socialLinks.map((social) => (
                 <motion.a
                   key={social.name}
                   href={social.url}
                   whileHover={{ scale: 1.1 }}
-                  className="bg-white p-3 rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+                  className="bg-white p-2 sm:p-3 rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
                 >
-                  <span className="text-xl" role="img" aria-label={social.name}>
+                  <span className="text-lg sm:text-xl" role="img" aria-label={social.name}>
                     {social.icon}
                   </span>
                 </motion.a>
@@ -121,7 +121,7 @@ const Footer = () => {
 
         {/* Pokemon Badge */}
         <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-          <div className="bg-red-500 text-white font-display font-black px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <div className="bg-red-500 text-white font-display font-black px-4 sm:px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm sm:text-base whitespace-nowrap">
             Gotta Catch 'Em All!
           </div>
         </div>
